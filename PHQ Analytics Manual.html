@@ -1,0 +1,893 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>PHQ Analytics Manual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: sticky contents rail on the left, a single 760px reading column on the right; diagrams and tables scroll inside their own boxes. */
+:root {
+  --bg: #fbfbfa;
+  --surface: #ffffff;
+  --sunk: #f2f3f5;
+  --fg: #16181c;
+  --fg-2: #4b5059;
+  --muted: #7a808a;
+  --rule: #e2e4e8;
+  --maroon: #790c21;
+  --maroon-ink: #8f1a30;
+  --maroon-tint: #f8ecee;
+  --navy: #1c3b5c;
+  --navy-ink: #1c3b5c;
+  --navy-tint: #eaf0f6;
+  --good: #1f7a36;
+  --good-tint: #e8f4ec;
+  --warn: #8a5a00;
+  --warn-tint: #fdf4e1;
+  --code-bg: #f3f4f6;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --surface: #181b20; --sunk: #1f232a; --fg: #eceef1; --fg-2: #b9bec7; --muted: #8b919b; --rule: #2c3139;
+    --maroon: #b8334c; --maroon-ink: #f08a9c; --maroon-tint: #2a161b; --navy: #4f7fb0; --navy-ink: #9cc0e6; --navy-tint: #17222f;
+    --good: #5cc37a; --good-tint: #15261a; --warn: #e9b44c; --warn-tint: #2a2213; --code-bg: #1f232a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111317; --surface: #181b20; --sunk: #1f232a; --fg: #eceef1; --fg-2: #b9bec7; --muted: #8b919b; --rule: #2c3139;
+  --maroon: #b8334c; --maroon-ink: #f08a9c; --maroon-tint: #2a161b; --navy: #4f7fb0; --navy-ink: #9cc0e6; --navy-tint: #17222f;
+  --good: #5cc37a; --good-tint: #15261a; --warn: #e9b44c; --warn-tint: #2a2213; --code-bg: #1f232a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--fg);
+  font: 16px/1.6 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+a { color: var(--navy-ink); text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--maroon); outline-offset: 2px; border-radius: 3px; }
+code, kbd { font-family: var(--f-mono); font-size: 0.86em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+kbd { border: 1px solid var(--rule); border-bottom-width: 2px; }
+
+.masthead { max-width: 1180px; margin: 0 auto; padding-block: 28px 20px; border-bottom: 3px solid var(--maroon); display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: end; justify-content: space-between; }
+.masthead .org { font: 700 12px/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; color: var(--maroon-ink); }
+.masthead h1 { font: 800 clamp(30px, 5vw, 44px)/1.05 var(--f-display); margin: 8px 0 6px; letter-spacing: -0.01em; text-wrap: balance; }
+.masthead p { margin: 0; color: var(--fg-2); max-width: 60ch; }
+.meta { display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-size: 13px; color: var(--fg-2); }
+.meta b { color: var(--fg); font-weight: 600; }
+
+.shell { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; padding-top: 28px; }
+@media (max-width: 960px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
+
+nav.toc { position: sticky; top: max(16px, env(safe-area-inset-top, 0px)); align-self: start; max-height: calc(100vh - 32px); overflow: auto; font-size: 14px; }
+nav.toc .label { font: 700 11px/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; }
+nav.toc a { display: grid; grid-template-columns: 26px 1fr; padding: 4px 6px; border-radius: 6px; color: var(--fg-2); text-decoration: none; }
+nav.toc a::before { content: counter(toc, decimal-leading-zero); font: 500 11px/1.9 var(--f-mono); color: var(--muted); }
+nav.toc a:hover { background: var(--sunk); color: var(--fg); }
+nav.toc a.on { background: var(--maroon-tint); color: var(--maroon-ink); font-weight: 600; }
+@media (max-width: 960px) {
+  nav.toc { position: static; max-height: none; border: 1px solid var(--rule); border-radius: 10px; padding: 12px; background: var(--surface); }
+  nav.toc ol { columns: 2; column-gap: 12px; }
+  nav.toc li { break-inside: avoid; }
+}
+@media (max-width: 520px) { nav.toc ol { columns: 1; } }
+
+main { min-width: 0; max-width: 780px; counter-reset: sec; }
+section { padding-top: 12px; margin-bottom: 44px; }
+section > h2 { counter-increment: sec; font: 700 26px/1.2 var(--f-display); margin: 0 0 6px; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+section > h2::before { content: counter(sec, decimal-leading-zero); font: 500 14px/1 var(--f-mono); color: var(--maroon-ink); }
+section > .lede { color: var(--fg-2); margin: 0 0 18px; max-width: 65ch; }
+h3 { font: 700 18px/1.3 var(--f-display); margin: 28px 0 8px; color: var(--navy-ink); text-wrap: balance; }
+h4 { font: 700 15px/1.3 var(--f-display); margin: 20px 0 6px; }
+p, li { max-width: 68ch; }
+ul, ol { padding-left: 22px; }
+li { margin: 3px 0; }
+
+.box { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); padding: 16px; margin: 16px 0; overflow-x: auto; }
+.box pre.mermaid { margin: 0; background: transparent; text-align: center; font-family: var(--f-body); min-width: 520px; }
+.box .cap { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+.tw { overflow-x: auto; margin: 14px 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { background: var(--navy); color: #fff; font: 600 12px/1.3 var(--f-display); letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; }
+
+.note { border-left: 4px solid var(--navy); background: var(--navy-tint); padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 14px 0; }
+.note.rule { border-color: var(--maroon); background: var(--maroon-tint); }
+.note.ok { border-color: var(--good); background: var(--good-tint); }
+.note.warn { border-color: var(--warn); background: var(--warn-tint); }
+.note > b:first-child { font: 700 11px/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; display: block; margin-bottom: 4px; color: var(--fg-2); }
+.note p { margin: 4px 0; }
+
+ol.steps { list-style: none; padding: 0; counter-reset: st; margin: 12px 0; }
+ol.steps > li { counter-increment: st; position: relative; padding: 2px 0 10px 40px; max-width: none; }
+ol.steps > li::before { content: counter(st); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--navy); color: #fff; font: 700 13px/26px var(--f-display); text-align: center; }
+ol.steps > li::after { content: ""; position: absolute; left: 12px; top: 30px; bottom: 2px; width: 2px; background: var(--rule); }
+ol.steps > li:last-child::after { display: none; }
+
+details.walk { border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); margin: 12px 0; }
+details.walk > summary { cursor: pointer; padding: 12px 16px; font: 700 16px/1.3 var(--f-display); list-style: none; display: flex; gap: 12px; align-items: baseline; }
+details.walk > summary::-webkit-details-marker { display: none; }
+details.walk > summary .tag { font: 600 11px/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--maroon-ink); flex: none; }
+details.walk > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-weight: 400; }
+details.walk[open] > summary::after { content: "–"; }
+details.walk > .body { padding: 0 16px 8px; border-top: 1px solid var(--rule); }
+details.walk .who { font-size: 14px; color: var(--fg-2); margin: 10px 0 0; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; margin: 14px 0; }
+.card { border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; background: var(--surface); min-width: 0; }
+.card h4 { margin: 0 0 4px; }
+.card p { margin: 0; font-size: 14px; color: var(--fg-2); }
+.pill { display: inline-block; font: 600 12px/1 var(--f-display); padding: 4px 8px; border-radius: 999px; border: 1px solid var(--rule); background: var(--sunk); color: var(--fg-2); white-space: nowrap; }
+.pill.full { background: var(--good-tint); color: var(--good); border-color: transparent; }
+.pill.part { background: var(--warn-tint); color: var(--warn); border-color: transparent; }
+.pill.not { background: var(--maroon-tint); color: var(--maroon-ink); border-color: transparent; }
+
+footer.end { max-width: 1180px; margin: 24px auto 0; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+</style>
+
+<header class="masthead">
+  <div>
+    <div class="org">IT Avenue · Data Analytics</div>
+    <h1>PHQ Analytics Manual</h1>
+    <p>How the PHQ Project &amp; Collection Dashboard and its PDF reports work: where the numbers come from, the rules behind them, and step-by-step guides for everyday use and maintenance.</p>
+  </div>
+  <div class="meta">
+    <span>System version</span><b>v6 (reports)</b>
+    <span>Platform</span><b>Google Apps Script web app</b>
+    <span>Data access</span><b>Read-only</b>
+    <span>Updated</span><b>October 29, 2026</b>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <div class="label">Contents</div>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#architecture">How it works</a></li>
+      <li><a href="#sources">Data sources</a></li>
+      <li><a href="#rules">Business rules</a></li>
+      <li><a href="#dashboard">Dashboard features</a></li>
+      <li><a href="#reports">Reports and PDF export</a></li>
+      <li><a href="#walkthroughs">Walkthroughs</a></li>
+      <li><a href="#setup">Setup and deployment</a></li>
+      <li><a href="#maintenance">Configuration and maintenance</a></li>
+      <li><a href="#security">Permissions and security</a></li>
+      <li><a href="#functions">Function reference</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+      <li><a href="#limits">Known limitations</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+      <li><a href="#changelog">Change log</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- 01 -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p class="lede">The PHQ Analytics system collects project, delivery and collection data for the seven tracked PHQs into one web page. Management can use that page to see what is late, what is unpaid and which region needs follow-up, and to export a branded PDF report.</p>
+
+      <div class="grid2">
+        <div class="card"><h4>Who uses it</h4><p>The Data Analyst maintains it and prepares reports. PHQ heads and management read the dashboard and the PDFs. Purchasing, Warehouse, Sales Admin and Accounting act on the follow-up lists.</p></div>
+        <div class="card"><h4>What it answers</h4><p>Which projects are not delivered, partial or overdue; how much is billed, collected and overdue; and which PHQ has the most pending work or the largest unpaid balance.</p></div>
+        <div class="card"><h4>Where data comes from</h4><p>Two <b>Project Links 2026</b> Google Sheets (Jan–Jun and Jul–Sep), plus the <b>Remarks</b> column of the Delivery Monitoring and Collection Monitoring Excel files.</p></div>
+        <div class="card"><h4>What it never does</h4><p>It never edits, moves, converts or deletes any source file. Google enforces this with read-only permissions, so even a coding mistake cannot change your sheets.</p></div>
+      </div>
+
+      <h3>Tracked PHQs</h3>
+      <p>Quezon, South Cotabato, Region 1, Bicol, Tagkawayan, Cavite and NCR. Rows for any other PHQ (for example Batangas or Region 3, which other PHQs now cover) are left out and listed under <i>Data quality</i>.</p>
+
+      <h3>The two pages</h3>
+      <div class="grid2">
+        <div class="card"><h4>Dashboard</h4><p>Live tiles, charts and tables in five sections: A Project fulfillment, B Collection, C Delivery-to-collection, D Regional performance, E Project remarks. Then a Data quality list.</p></div>
+        <div class="card"><h4>Reports</h4><p>Choose Delivery, Collection or Overall; set the period, PHQs and sections; preview the pages; download a PDF in IT Avenue's maroon and navy layout.</p></div>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="architecture">
+      <h2>How it works</h2>
+      <p class="lede">Every time the page opens or someone clicks <b>Refresh data</b>, the script reads the source files fresh, cleans and combines the rows, and sends one list of projects to the browser. All charts, tables and PDFs are built from that list.</p>
+
+      <div class="box">
+<pre class="mermaid">
+flowchart LR
+  subgraph SRC["Source files (read-only)"]
+    PL1["Project Links 2026<br/>Jan–Jun (Google Sheet)"]
+    PL2["PROJECT LINKS 2026<br/>Jul–Sep (Google Sheet)"]
+    DM["Delivery Monitoring<br/>Jan–Sep (.xlsx)"]
+    CM["Collection Monitoring<br/>Jan–Sep (.xlsx)"]
+  end
+  subgraph GAS["Apps Script (Code.gs)"]
+    R1["Read Awarded Projects<br/>+ Project Completion tabs"]
+    R2["Read Remarks column<br/>(unzip .xlsx in memory)"]
+    N["Clean and combine<br/>match PR numbers, fix PHQ names,<br/>read dates, set delivery status"]
+  end
+  subgraph WEB["Browser (Index.html + Report.html)"]
+    D["Dashboard<br/>sections A–E"]
+    RP["Reports page"]
+    PDF["PDF file"]
+  end
+  PL1 --> R1
+  PL2 --> R1
+  DM --> R2
+  CM --> R2
+  R1 --> N
+  R2 --> N
+  N -- "one list of projects" --> D
+  N -- "same list" --> RP
+  RP -- "jsPDF" --> PDF
+</pre>
+        <div class="cap">Data flows one way: from the source files, through the script, to the browser. Nothing flows back.</div>
+      </div>
+
+      <h3>What happens when you open the page</h3>
+      <div class="box">
+<pre class="mermaid">
+sequenceDiagram
+  actor U as User
+  participant B as Browser
+  participant S as Apps Script
+  participant G as Google Sheets / Drive
+  U->>B: Open web app link
+  B->>S: doGet()
+  S-->>B: Page (Index + Report)
+  B->>S: getDashboardData()
+  S->>G: Read Project Links (2 files)
+  S->>G: Read Monitoring .xlsx (2 files)
+  G-->>S: Rows
+  S->>S: Clean, match, classify
+  S-->>B: { projects, quality, today }
+  B->>B: Draw dashboard
+  U->>B: Click Reports, then Download PDF
+  B->>B: Build PDF in the browser
+  B-->>U: DMR_20261031.pdf
+</pre>
+      </div>
+
+      <h3>System files</h3>
+      <div class="tw"><table>
+        <thead><tr><th>File in Apps Script</th><th>Runs on</th><th>Job</th></tr></thead>
+        <tbody>
+          <tr><td><code>Code.gs</code></td><td>Google's server</td><td>Opens the source files, reads tabs by header name, cleans values, matches remarks, decides delivery status, returns the project list. Holds the settings (file IDs, PHQ list, cancelled keywords).</td></tr>
+          <tr><td><code>Index</code> (Index.html)</td><td>Browser</td><td>The page shell, the Dashboard | Reports switch, filters, all dashboard sections and charts (Chart.js).</td></tr>
+          <tr><td><code>Report</code> (Report.html)</td><td>Browser</td><td>The Reports page: options form, PDF builder (jsPDF + AutoTable), in-page preview (pdf.js), branding and logo.</td></tr>
+          <tr><td><code>appsscript.json</code></td><td>Google</td><td>The manifest: time zone (Asia/Manila), read-only permissions, and web app settings.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 03 -->
+    <section id="sources">
+      <h2>Data sources</h2>
+      <p class="lede">The script finds columns by their <b>header name</b>, not by column letter. That way the Jan–Jun and Jul–Sep files can have different layouts. Renaming a header the system uses stops that column from being read.</p>
+
+      <div class="tw"><table>
+        <thead><tr><th>Source</th><th>Tab</th><th>Columns used</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td>Project Links (both files)</td><td><b>Awarded Projects</b></td><td><code>PROJECT NUMBER</code>, <code>PHQ</code>, <code>END USER</code>, <code>TYPE OF PROCUREMENT</code>, <code>LINK</code>, <code>PROJECT STATUS</code>, <code>PO DATE</code>, <code>DATE ITEM ORDERED</code>, <code>TARGET CUSTOMER DELIVERY DATE</code>, <code>CUSTOMER'S EXPECTED DATE</code>, <code>START COLLECTION DATE</code>, <code>DUE DATE</code>, <code>PARTIAL/TOTAL PAYMENT DATE</code>, <code>GROSS SALES FROM OASIS</code>, <code>PAYMENT FROM OASIS</code>, <code>BALANCE FROM OASIS</code>, <code>PAYMENT STATUS</code></td><td>The list of projects (every row is one project), targets, due dates and all money figures</td></tr>
+          <tr><td>Project Links (both files)</td><td><b>Project Completion</b></td><td><code>PROJECT NUMBER</code>, <code>PARTIAL DELIVERY DATE</code>, <code>ACTUAL CUSTOMER DELIVERY DATE</code>, <code>ACTUAL CUSTOMER RECEIVED DATE</code>, <code>DR NUMBER</code></td><td>Delivery status and DR numbers. If a project is missing here, the same columns in Awarded Projects are used instead.</td></tr>
+          <tr><td>Delivery Monitoring .xlsx</td><td>Every tab with <code>PR No.</code> and <code>Remarks</code></td><td><code>PR No.</code>, <code>Remarks</code></td><td>Delivery remarks, and the Cancelled / dropped rule</td></tr>
+          <tr><td>Collection Monitoring .xlsx</td><td>Every tab with <code>PR No.</code> and <code>Remarks</code></td><td><code>PR No.</code>, <code>Remarks</code></td><td>Collection remarks</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="note"><b>Header row</b><p>In each tab the script looks through the first 15 rows for the row containing <code>PROJECT NUMBER</code> (or <code>PR No.</code> in the monitoring files) and treats that row as the header. Blank rows above the header are fine.</p></div>
+      <div class="note warn"><b>Money source</b><p>All amounts come from the <b>…FROM OASIS</b> columns, because OASIS is the more reliable record. <code>GROSS SALES</code> and <code>BALANCE</code> without "FROM OASIS" are not used.</p></div>
+    </section>
+
+    <!-- 04 -->
+    <section id="rules">
+      <h2>Business rules</h2>
+      <p class="lede">These rules decide every number on the dashboard and in the PDFs. If a figure looks wrong, check it against this section first.</p>
+
+      <h3>4.1 Matching project numbers</h3>
+      <p>The same project is typed differently across files. The script reduces every number to a core key: letters, dash, number with PHQ code, dash, two-digit year. Spaces and anything after the year are ignored.</p>
+      <div class="tw"><table>
+        <thead><tr><th>As typed</th><th>Core key</th></tr></thead>
+        <tbody>
+          <tr><td><code>CORPO-  00021NCR- 26</code></td><td><code>CORPO-00021NCR-26</code></td></tr>
+          <tr><td><code>NHQ- 00251BCL- 26 - SMB</code></td><td><code>NHQ-00251BCL-26</code></td></tr>
+          <tr><td><code>NHQ- 00056NCR- 26 - (W3C)</code></td><td><code>NHQ-00056NCR-26</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>If the same key appears in both Project Links files, the Jul–Sep row is used and the duplicate is listed under Data quality.</p>
+
+      <h3>4.2 PHQ names</h3>
+      <p>Spelling and capitals are cleaned up: <code>QUEZON</code>, <code>Quezon</code> and <code>Lucena</code> all become <b>Quezon</b>; <code>REGION 1</code> and <code>Region I</code> become <b>Region 1</b>; <b>Tagkawayan</b> is the official spelling. Any other value is excluded.</p>
+
+      <h3>4.3 Reading dates</h3>
+      <ul>
+        <li>Real date cells are read exactly.</li>
+        <li>Dates typed as text are still read when possible, and listed under <i>Data quality</i> so they can be fixed: <code>07-Jan-2026</code>, <code>2026-01-07</code>, <code>16/03/2026</code>, <code>06/19/2026</code>.</li>
+        <li>When both numbers are 12 or less (for example <code>02/01/2026</code>), the date is read <b>day first</b> (2 January) and flagged as <i>ambiguous</i>.</li>
+        <li>A project "delivered before its PO date" usually means day and month were swapped. It is listed, and left out of the average lead time.</li>
+      </ul>
+
+      <h3>4.4 Delivery status</h3>
+      <p>Each project gets exactly one status. The checks run in this order:</p>
+      <div class="box">
+<pre class="mermaid">
+flowchart TD
+  A([Project in Awarded Projects]) --> B{"Actual customer delivery date<br/>or received date filled?<br/>(Project Completion tab)"}
+  B -- Yes --> F["Fully delivered"]
+  B -- No --> C{"Delivery remark contains CANCELLED,<br/>DROPPED, LOST, NOT AWARDED<br/>or FAILED BIDDING?"}
+  C -- Yes --> X["Cancelled / dropped<br/>(excluded from delivery counts)"]
+  C -- No --> D{"Partial delivery date filled?"}
+  D -- Yes --> P["Partially delivered"]
+  D -- No --> N["Not delivered"]
+  P --> O{"Target date before today<br/>(or report date)?"}
+  N --> O
+  O -- Yes --> R["+ Overdue risk flag"]
+</pre>
+        <div class="cap">Overdue is a flag added on top of Partial or Not delivered. It is not a separate status, so it never double-counts a project.</div>
+      </div>
+
+      <div class="tw"><table>
+        <thead><tr><th>Measure</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr><td>Total active projects</td><td>Rows in Awarded Projects for the 7 PHQs, minus Cancelled / dropped</td></tr>
+          <tr><td><span class="pill full">Fully delivered</span></td><td>Actual customer delivery date or received date is filled</td></tr>
+          <tr><td><span class="pill part">Partially delivered</span></td><td>Partial delivery date filled, no final date</td></tr>
+          <tr><td><span class="pill not">Not delivered</span></td><td>No partial and no final date</td></tr>
+          <tr><td><span class="pill">Cancelled / dropped</span></td><td>Not fully delivered, and the delivery remark contains one of the five keywords</td></tr>
+          <tr><td>Overdue delivery</td><td>Partial or Not delivered, and <code>TARGET CUSTOMER DELIVERY DATE</code> is before today. <code>CUSTOMER'S EXPECTED DATE</code> is used if the target is blank.</td></tr>
+          <tr><td>Days overdue</td><td>Today (or the report date) minus the target date</td></tr>
+          <tr><td>Days late (delivered)</td><td>Actual delivery date minus target date; zero or less means on time</td></tr>
+          <tr><td>On-time delivery rate</td><td>Delivered on or before target ÷ delivered projects that have a target date</td></tr>
+          <tr><td>Delivery lead time</td><td>Actual delivery date minus PO date (negative results excluded)</td></tr>
+          <tr><td>Waiting the longest</td><td>Today minus <code>DATE ITEM ORDERED</code> (PO date if blank), for projects not fully delivered</td></tr>
+          <tr><td>Delivery completion</td><td>Fully delivered ÷ active projects</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>4.5 Collection</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Measure</th><th>Rule</th></tr></thead>
+        <tbody>
+          <tr><td>Billed</td><td>Sum of <code>GROSS SALES FROM OASIS</code></td></tr>
+          <tr><td>Collected</td><td>Sum of <code>PAYMENT FROM OASIS</code></td></tr>
+          <tr><td>Outstanding balance</td><td>Sum of <code>BALANCE FROM OASIS</code>; an account "has a balance" when it is more than ₱0.50</td></tr>
+          <tr><td>Overdue account</td><td>Has a balance and <code>DUE DATE</code> is before today (or the report date)</td></tr>
+          <tr><td>Days late (payment)</td><td>Today minus due date</td></tr>
+          <tr><td>Partial-payment account</td><td>Something paid and a balance still remaining</td></tr>
+          <tr><td>Collection rate</td><td>Collected ÷ billed</td></tr>
+          <tr><td>Billed by month</td><td>Month of <code>START COLLECTION DATE</code> (fallback: delivery date, then PO date)</td></tr>
+          <tr><td>Collected by month</td><td>Month of <code>PARTIAL/TOTAL PAYMENT DATE</code>. Payments without a date count in totals but cannot be placed on the monthly chart.</td></tr>
+          <tr><td>Overdue aging (PDF)</td><td>Overdue balance split into 1–30, 31–60, 61–90 and over 90 days past due, plus "not yet due"</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>4.6 Delivery-to-collection and follow-ups</h3>
+      <ul>
+        <li><b>Delivered, nothing collected:</b> fully delivered, billed amount above zero, nothing paid.</li>
+        <li><b>Delivered, payment overdue:</b> fully delivered and an overdue account.</li>
+        <li><b>Gap (PDF):</b> collection rate minus delivery completion, per PHQ. A large negative gap means the work is done but the money is not in.</li>
+        <li><b>Follow-up items:</b> overdue deliveries + overdue accounts, per PHQ. Used to rank regions.</li>
+      </ul>
+    </section>
+
+    <!-- 05 -->
+    <section id="dashboard">
+      <h2>Dashboard features</h2>
+      <p class="lede">The Dashboard page is for reading the current situation. Everything on it updates when you change a filter or click Refresh data.</p>
+
+      <h3>Top bar</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><b>Dashboard | Reports</b></td><td>Switches between the two pages. Data is loaded once and shared.</td></tr>
+          <tr><td><b>PHQ</b> filter</td><td>Shows one PHQ or all. Section D ignores it so you can always compare regions.</td></tr>
+          <tr><td><b>PO month</b> filter</td><td>Shows projects whose PO date falls in that month (start-of-collection or delivery month if there is no PO date).</td></tr>
+          <tr><td><b>Refresh data</b></td><td>Reads all four source files again. Use it after someone updates a sheet.</td></tr>
+          <tr><td>Status lines</td><td>When data was read, how many projects are shown, the system version, and how many remarks loaded. Errors reading the monitoring files appear here in red.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Sections</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Section</th><th>Tiles</th><th>Charts and tables</th></tr></thead>
+        <tbody>
+          <tr><td><b>A. Project fulfillment</b></td><td>Total active, Not delivered, Partial, Fully delivered, Cancelled / dropped, Overdue deliveries, On-time rate, Avg lead time</td><td>Past target delivery date · Partial with no final date · Waiting the longest · Days late per delivered project · Cancelled / dropped (all with delivery remarks)</td></tr>
+          <tr><td><b>B. Collection</b></td><td>Billed, Collected, Outstanding, Overdue balance, Collection rate, Partial-payment accounts</td><td>Billed vs collected by month · Outstanding at month end · Overdue accounts (with collection remarks)</td></tr>
+          <tr><td><b>C. Delivery-to-collection</b></td><td>Delivered with nothing collected, With outstanding balance, Delivered with payment overdue, Delivery completion, Collection progress</td><td>Delivery completion vs collection rate by PHQ · Delivered, payment overdue</td></tr>
+          <tr><td><b>D. Regional</b></td><td>Six callouts: most pending, most overdue deliveries, best on-time rate, largest outstanding, most overdue accounts, highest collection rate</td><td>Projects by delivery status per PHQ · Outstanding vs overdue per PHQ · PHQ scorecard sorted by follow-up items</td></tr>
+          <tr><td><b>E. Project remarks</b></td><td>–</td><td>Every project with a remark, with search and a Delivery / Collection filter</td></tr>
+          <tr><td><b>Data quality</b></td><td>–</td><td>Text dates, ambiguous dates, delivered-before-PO, excluded PHQ rows, duplicate project numbers, remarks with no matching project, files that could not be read</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><b>Tips</b><p>Click a project number to open its project sheet. Tables show up to 100 rows (section E up to 500); a note says when more exist. Charts show exact values on hover.</p></div>
+    </section>
+
+    <!-- 06 -->
+    <section id="reports">
+      <h2>Reports and PDF export</h2>
+      <p class="lede">The Reports page turns the same data into a printable, branded PDF for a chosen period. You pick what goes in, check the preview, then download.</p>
+
+      <h3>Report types</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Type</th><th>Report no. / file</th><th>Sections (in order)</th></tr></thead>
+        <tbody>
+          <tr><td><b>Delivery Monitoring</b></td><td><code>DMR-YYYYMMDD</code><br/><code>DMR_YYYYMMDD.pdf</code></td><td>Delivery performance summary · Status breakdown chart · Priority delivery list · Regional summary · Cancelled / dropped · Findings, recommendations and action tracking · Supplementary details</td></tr>
+          <tr><td><b>Collection Monitoring</b></td><td><code>CMR-…</code></td><td>Collection summary · Overdue aging chart · Priority collection list · Regional collection summary · Findings · Supplementary details</td></tr>
+          <tr><td><b>Overall</b></td><td><code>OPR-…</code></td><td>Executive summary · Delivery summary, chart and priority list · Collection summary, aging and priority list · Delivery-to-collection · Regional and PHQ performance · Findings · Supplementary details</td></tr>
+        </tbody>
+      </table></div>
+      <p>Every PDF opens with the company header and logo, a maroon title band with the report number, and a Report details / Coverage block. It ends with a sign-off block. Every page has a navy footer with the page number.</p>
+
+      <h3>Options</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Option</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>Reporting period</td><td><b>From</b> and <b>To</b>, or a preset (This month, Last month, This quarter, Year to date). <b>To</b> is the "as of" date for every calculation.</td></tr>
+          <tr><td>Projects included</td><td><i>All projects, status as of the To date</i>: every project with a PO date on or before To (or no PO date). <i>Only projects with a PO date in the period</i>: just that period's new projects.</td></tr>
+          <tr><td>Coverage</td><td>All PHQs or a selection. Shown on the report as "All PHQs / Regions" or the names.</td></tr>
+          <tr><td>Sections</td><td>Tick the parts to include. Remembered per report type in your browser.</td></tr>
+          <tr><td>Rows in priority lists</td><td>Top 15, 25, 50 or All. A note says how many were left out.</td></tr>
+          <tr><td>Sign-off</td><td>Prepared / Noted / Approved by, with positions. Blank Noted or Approved lines are left out.</td></tr>
+          <tr><td>Follow-up date</td><td>3, 7 or 14 days after the To date; printed in the Action tracking table.</td></tr>
+          <tr><td>Additional notes</td><td>Your own sentence, added as the last Key finding.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>"As of" rules in the PDF</h3>
+      <p>A delivery or partial date <b>after</b> the To date is treated as not yet happened. A report for October therefore shows the situation on October 31, even if it is printed later. Money figures are the current OASIS amounts; overdue status and aging are measured against the To date.</p>
+
+      <h3>Required action (suggested)</h3>
+      <p>Each priority row gets a suggested action from its status and remark. These are rules, not judgement, so review them before sending.</p>
+      <div class="grid2">
+        <div class="tw" style="margin:0"><table>
+          <thead><tr><th>Delivery: when</th><th>Suggested action</th></tr></thead>
+          <tbody>
+            <tr><td>Partially delivered</td><td>Follow up remaining items</td></tr>
+            <tr><td>Remark mentions NOA or NTP</td><td>Confirm NOA / award status</td></tr>
+            <tr><td>Remark mentions ITEM, STOCK, ETA, SUPPLIER or AVAILABLE</td><td>Confirm supplier status and ETA</td></tr>
+            <tr><td>No PO date</td><td>Confirm PO status</td></tr>
+            <tr><td>Over 30 days overdue</td><td>Escalate: confirm supplier status</td></tr>
+            <tr><td>Otherwise</td><td>Request delivery update</td></tr>
+          </tbody>
+        </table></div>
+        <div class="tw" style="margin:0"><table>
+          <thead><tr><th>Collection: when</th><th>Suggested action</th></tr></thead>
+          <tbody>
+            <tr><td>Remark says ALREADY PAID / PAID TRU</td><td>Reconcile payment in OASIS</td></tr>
+            <tr><td>Partial payment</td><td>Collect remaining balance</td></tr>
+            <tr><td>Over 60 days late</td><td>Escalate; send formal reminder</td></tr>
+            <tr><td>31–60 days late</td><td>Send payment reminder</td></tr>
+            <tr><td>Otherwise</td><td>Follow up with end user</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <h3>Findings and action tracking (automatic)</h3>
+      <ul>
+        <li><b>Key findings</b> are written from the numbers: overdue count and the longest delay, partial deliveries, the PHQ with most pending, missing target / PO / DR data, overdue collections and the oldest account, collection rate, the PHQ with the largest overdue balance, payments that need reconciling.</li>
+        <li><b>Recommendations</b>: the standard list (prioritise longest delays, confirm supplier status, follow up partials, reconcile with OASIS) plus collection items for Collection and Overall reports.</li>
+        <li><b>Action tracking</b> rows: Delayed items → Purchasing; Incomplete deliveries → Warehouse / Sales Admin; Missing dates / DR numbers → PHQ Admin; Overdue collections → Collections / Accounting; Payments to reconcile → Accounting. Each row has its count and follow-up date.</li>
+      </ul>
+      <div class="note"><b>Preview</b><p>The preview draws each PDF page inside the page with pdf.js. Chrome blocks its own PDF viewer inside Apps Script web apps, so the preview cannot use it.</p></div>
+    </section>
+
+    <!-- 07 -->
+    <section id="walkthroughs">
+      <h2>Walkthroughs</h2>
+      <p class="lede">Step-by-step guides for the jobs people do most often. Open the one you need.</p>
+
+      <details class="walk" open>
+        <summary><span class="tag">Daily</span>Morning check of deliveries and collections</summary>
+        <div class="body">
+          <p class="who">For: Data Analyst, PHQ heads · About 5 minutes</p>
+          <ol class="steps">
+            <li>Open the dashboard link and wait for "Data read …" to show today's time. Click <b>Refresh data</b> if the sheets were updated after you opened it.</li>
+            <li>Check the second status line reads <i>Remarks loaded: … delivery, … collection</i> with no red text.</li>
+            <li>In section A, read <b>Overdue deliveries</b>, then scan <b>Past target delivery date</b>. Rows are sorted by days overdue, so the top rows come first.</li>
+            <li>In section B, read <b>Overdue balance</b>, then scan <b>Overdue accounts</b>.</li>
+            <li>In section D, the <b>PHQ scorecard</b> shows which PHQ has the most follow-up items today.</li>
+            <li>Scroll to <b>Data quality</b>. Send any new issues to the PHQ that owns the row.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Monthly</span>Prepare the Delivery Monitoring Report for management</summary>
+        <div class="body">
+          <p class="who">For: Data Analyst · About 10 minutes</p>
+          <ol class="steps">
+            <li>Click <b>Refresh data</b> so the report uses the latest sheets.</li>
+            <li>Click <b>Reports</b> at the top.</li>
+            <li>Select <b>Delivery Monitoring Report</b>.</li>
+            <li>Click <b>Last month</b> (or set From and To). Leave <i>All projects, status as of the To date</i> selected for a full monitoring view.</li>
+            <li>Leave <b>All PHQs / Regions</b> ticked, or untick PHQs for a regional version.</li>
+            <li>Check the sections you need. Keep <i>Supplementary page</i> on if management wants links and full remarks.</li>
+            <li>Fill in <b>Prepared by</b> (and Noted / Approved by if they will sign). Add a sentence in <b>Additional notes</b> if there is context the numbers do not show.</li>
+            <li>Click <b>Update preview</b> and read through the pages, especially the <i>Required Action</i> column.</li>
+            <li>Click <b>Download PDF</b>. The file is named like <code>DMR_20261031.pdf</code>.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Monthly</span>Collection report for Accounting</summary>
+        <div class="body">
+          <ol class="steps">
+            <li>Reports → <b>Collection Monitoring Report</b> → set the period.</li>
+            <li>Set <b>Rows in priority lists</b> to <i>All</i> if Accounting needs every overdue account.</li>
+            <li>Choose a <b>Follow-up date</b> that matches your collection cycle.</li>
+            <li>Preview, check the <i>Payments to reconcile</i> row in Action tracking, then <b>Download PDF</b>.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Ad hoc</span>Follow up one PHQ's late projects</summary>
+        <div class="body">
+          <ol class="steps">
+            <li>On the Dashboard, set <b>PHQ</b> to the region, for example <i>Bicol</i>.</li>
+            <li>Read <b>Past target delivery date</b> and <b>Waiting the longest</b>. The delivery remarks column shows what the PHQ last reported.</li>
+            <li>Click a project number to open its project sheet for details.</li>
+            <li>For a printable list: Reports → Delivery → untick every PHQ except that one → Download PDF.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Lookup</span>Find a project's remarks</summary>
+        <div class="body">
+          <ol class="steps">
+            <li>Scroll to <b>E. Project remarks</b>.</li>
+            <li>Type the PR number, end user or a word from the remark (for example <i>WAITING FOR NOA</i>) in <b>Search</b>.</li>
+            <li>Use <b>Show</b> to limit to delivery or collection remarks.</li>
+            <li>If a project you expect is missing, check <b>Data quality → remarks with no matching project</b>. The PR number is probably typed differently in the two files.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Data</span>Fix the issues listed under Data quality</summary>
+        <div class="body">
+          <ol class="steps">
+            <li>Open the Data quality list and expand a group. Each item names the file, tab, row and column.</li>
+            <li><b>Dates typed as text:</b> select the column in the source sheet → <b>Format → Number → Date</b>. Re-type any cell that stays left-aligned.</li>
+            <li><b>Ambiguous dates:</b> confirm whether <code>02/01/2026</code> meant 2 January or 1 February and re-enter it as a real date.</li>
+            <li><b>Delivered before PO date:</b> usually day and month swapped. Correct whichever date is wrong.</li>
+            <li><b>Unmatched remarks:</b> make the PR number the same in the monitoring file and Project Links.</li>
+            <li>Back in the dashboard, click <b>Refresh data</b>. Fixed items disappear from the list.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Admin</span>Add a new Project Links file (for example Oct–Dec)</summary>
+        <div class="body">
+          <ol class="steps">
+            <li>Open the new Google Sheet and copy its ID from the address bar: the long code between <code>/d/</code> and <code>/edit</code>.</li>
+            <li>Check it has <b>Awarded Projects</b> and <b>Project Completion</b> tabs with the same header names.</li>
+            <li>In Apps Script, open <code>Code.gs</code> and add a line to <code>SOURCES</code>:<br/><code>{ label: 'Oct–Dec', id: 'PASTE_ID_HERE' }</code>. Put it last, so its rows win if a project appears twice.</li>
+            <li>Save, run <code>getDashboardData</code> once, then publish a new version (see <a href="#setup">Setup</a>).</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="walk">
+        <summary><span class="tag">Admin</span>Share the dashboard with the team</summary>
+        <div class="body">
+          <ol class="steps">
+            <li>In Apps Script: <b>Deploy → Manage deployments → ✏ edit</b>.</li>
+            <li>Change <b>Who has access</b> from <i>Only myself</i> to <i>Anyone within itavenue.ph</i>.</li>
+            <li>Keep <b>Execute as: Me</b>. Viewers then see the data without needing access to the source files, and still cannot edit anything.</li>
+            <li>Click <b>Deploy</b> and share the same web app link.</li>
+          </ol>
+        </div>
+      </details>
+    </section>
+
+    <!-- 08 -->
+    <section id="setup">
+      <h2>Setup and deployment</h2>
+      <p class="lede">One-time setup of a fresh standalone Apps Script project, and how to publish later changes.</p>
+
+      <h3>First-time setup</h3>
+      <ol class="steps">
+        <li>Go to <b>script.google.com → New project</b>. Rename it (for example <i>Data Analytics</i>).</li>
+        <li>Replace the contents of <code>Code.gs</code> with the provided <code>Code.gs</code>.</li>
+        <li><b>+ → HTML</b>, name it <code>Index</code>, paste <code>Index.html</code>. <b>+ → HTML</b> again, name it <code>Report</code>, paste <code>Report.html</code>. Names are case-sensitive.</li>
+        <li><b>⚙ Project Settings</b> → tick <i>Show "appsscript.json" manifest file in editor</i>. Replace its contents with the provided <code>appsscript.json</code>. Save.</li>
+        <li>Choose <code>getDashboardData</code> next to ▶ Run and click <b>Run</b>. Approve the permissions. The screen should list only <i>See all your Google Sheets spreadsheets</i> and <i>See and download all your Google Drive files</i>.</li>
+        <li><b>Deploy → New deployment → ⚙ Web app</b>. Execute as: <b>Me</b>. Who has access: <b>Only myself</b> to start. Click <b>Deploy</b> and copy the web app URL.</li>
+        <li>Open the URL. The line under the title should show the current version, for example <i>Dashboard v6 (reports)</i>.</li>
+      </ol>
+
+      <h3>Publishing a change</h3>
+      <div class="note rule"><b>Rule</b><p>Saving code does <b>not</b> change the live link. The link runs the code, manifest and permissions from its last published version. After any change, publish a new version.</p></div>
+      <ol class="steps">
+        <li>Edit and save the files.</li>
+        <li>If <code>appsscript.json</code> changed, run <code>getDashboardData</code> once to approve the new permissions.</li>
+        <li><b>Deploy → Manage deployments</b> → select the deployment → <b>✏</b> → Version: <b>New version</b> → <b>Deploy</b>. The URL stays the same.</li>
+        <li>Refresh the web app (<kbd>Ctrl</kbd>+<kbd>F5</kbd>) and confirm the version label.</li>
+      </ol>
+      <p>To try a change before others see it, use <b>Deploy → Test deployments</b> and open the <code>/dev</code> link.</p>
+    </section>
+
+    <!-- 09 -->
+    <section id="maintenance">
+      <h2>Configuration and maintenance</h2>
+      <p class="lede">Everything you are likely to change lives in a few clearly named settings at the top of the files. Nothing else needs editing for routine changes.</p>
+      <div class="tw"><table>
+        <thead><tr><th>To change</th><th>File</th><th>Setting</th></tr></thead>
+        <tbody>
+          <tr><td>Project Links files</td><td>Code.gs</td><td><code>SOURCES</code>: label and file ID per file. Later files win on duplicates.</td></tr>
+          <tr><td>Monitoring files for remarks</td><td>Code.gs</td><td><code>REMARK_SOURCES</code>: file IDs for Delivery and Collection Monitoring. If they are re-uploaded, the ID changes. They can also be converted to Google Sheets; the script detects this automatically.</td></tr>
+          <tr><td>Tracked PHQs</td><td>Code.gs</td><td><code>PHQS</code>, plus a matching line in <code>normalizePhq_</code> for a new spelling</td></tr>
+          <tr><td>Cancelled / dropped keywords</td><td>Code.gs</td><td><code>CANCELLED_REMARKS</code>. For example add <code>NAG JOIN</code> to catch "hindi po tayo nag join".</td></tr>
+          <tr><td>Tab names</td><td>Code.gs</td><td><code>AWARDED_TAB</code>, <code>COMPLETION_TAB</code></td></tr>
+          <tr><td>Time zone</td><td>Code.gs + appsscript.json</td><td><code>TIMEZONE</code> / <code>timeZone</code> (Asia/Manila)</td></tr>
+          <tr><td>Company name, address, colors</td><td>Report.html</td><td><code>BRAND</code> block</td></tr>
+          <tr><td>Logo</td><td>Report.html</td><td><code>LOGO</code> (embedded image) and <code>LOGO_RATIO</code> (width ÷ height)</td></tr>
+          <tr><td>Report titles and number prefixes</td><td>Report.html</td><td><code>TITLES</code></td></tr>
+          <tr><td>Sections offered per report</td><td>Report.html</td><td><code>SECTIONS</code></td></tr>
+          <tr><td>Suggested actions</td><td>Report.html</td><td><code>deliveryAction</code>, <code>collectionAction</code></td></tr>
+          <tr><td>Version label</td><td>Index.html</td><td><code>DASHBOARD_VERSION</code>. Raise it with every release so people can see which version they are on.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><b>Keep headers stable</b><p>Renaming a column the system reads (see <a href="#sources">Data sources</a>) makes that column read as blank. Adding new columns anywhere is safe.</p></div>
+    </section>
+
+    <!-- 10 -->
+    <section id="security">
+      <h2>Permissions and security</h2>
+      <p class="lede">The manifest asks Google for two read-only permissions and nothing else, so the source files are protected by Google itself, not only by the code.</p>
+      <div class="tw"><table>
+        <thead><tr><th>Permission</th><th>Shown to you as</th><th>Why it is needed</th></tr></thead>
+        <tbody>
+          <tr><td><code>spreadsheets.readonly</code></td><td>See all your Google Sheets spreadsheets</td><td>Read the two Project Links files</td></tr>
+          <tr><td><code>drive.readonly</code></td><td>See and download all your Google Drive files</td><td>Download the two Monitoring .xlsx files to read their Remarks</td></tr>
+        </tbody>
+      </table></div>
+      <ul>
+        <li><b>Check it any time:</b> myaccount.google.com/permissions → the Apps Script project. If it ever says "edit, create, and delete", the manifest is not in place. Remove access, fix <code>appsscript.json</code> and authorize again.</li>
+        <li><b>Execute as Me:</b> the page reads data with the owner's access. Viewers do not need access to the source files and get no access to them.</li>
+        <li><b>Who has access:</b> start with <i>Only myself</i>; widen to <i>Anyone within itavenue.ph</i> to share. Avoid "Anyone" (public).</li>
+        <li><b>Browser storage:</b> the Reports page remembers your section choices and sign-off names in your own browser only.</li>
+      </ul>
+    </section>
+
+    <!-- 11 -->
+    <section id="functions">
+      <h2>Function reference</h2>
+      <p class="lede">For whoever maintains the code. Server functions run on Google's side; client functions run in the browser.</p>
+
+      <h3>Server (Code.gs)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>doGet()</code></td><td>Serves the web app page (Index, with Report included).</td></tr>
+          <tr><td><code>include(name)</code></td><td>Inserts another HTML file into Index; used for <code>Report</code>.</td></tr>
+          <tr><td><code>getDashboardData()</code></td><td>Main entry point. Reads all sources and returns <code>{ generatedAt, today, phqs, projects[], quality }</code>.</td></tr>
+          <tr><td><code>readTable_(ss, tab, ctx)</code></td><td>Reads a tab, finds the header row, returns column positions and rows.</td></tr>
+          <tr><td><code>readCompletion_(ss, ctx)</code></td><td>Builds a lookup of Project Completion rows by project key.</td></tr>
+          <tr><td><code>projectKey_(id)</code></td><td>Reduces a project number to its core key (rule 4.1).</td></tr>
+          <tr><td><code>normalizePhq_(v)</code></td><td>Returns the official PHQ name, or nothing to exclude the row.</td></tr>
+          <tr><td><code>toIsoDate_(v, …)</code></td><td>Reads a date cell or text date; logs text and ambiguous dates.</td></tr>
+          <tr><td><code>toNumber_(v)</code></td><td>Reads amounts such as <code>₱19,645.00</code> as numbers.</td></tr>
+          <tr><td><code>readRemarks_(fileId)</code></td><td>Collects remarks by project key from every tab with PR No. and Remarks; PHQ tabs win over Archive / History.</td></tr>
+          <tr><td><code>readWorkbook_(fileId)</code></td><td>Reads all tabs of a Google Sheet, or unzips an .xlsx in memory.</td></tr>
+          <tr><td><code>readXlsxSheet_</code>, <code>attr_</code>, <code>colIndex_</code>, <code>xmlText_</code>, <code>xmlDecode_</code></td><td>Small helpers for reading .xlsx contents.</td></tr>
+          <tr><td><code>logIssue_</code></td><td>Counts data-quality issues and keeps the first 200 examples.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h4>Project record returned to the browser</h4>
+      <p><code>id</code>, <code>src</code>, <code>phq</code>, <code>endUser</code>, <code>procurement</code>, <code>link</code>, <code>projectStatus</code>, <code>poDate</code>, <code>itemOrdered</code>, <code>target</code>, <code>partial</code>, <code>delivered</code>, <code>drNumber</code>, <code>delivery</code> (FULL / PARTIAL / NOT / CANCELLED), <code>startCollection</code>, <code>due</code>, <code>payDate</code>, <code>billed</code>, <code>paid</code>, <code>balance</code>, <code>paymentStatus</code>, <code>deliveryRemarks</code>, <code>collectionRemarks</code>. Dates are <code>yyyy-mm-dd</code> text.</p>
+
+      <h3>Browser: Dashboard (Index.html)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>load()</code></td><td>Calls <code>getDashboardData</code>; on success draws the page and informs the Reports page.</td></tr>
+          <tr><td><code>showView(v)</code></td><td>Switches between Dashboard and Reports.</td></tr>
+          <tr><td><code>render()</code></td><td>Applies filters and redraws sections A–E and Data quality.</td></tr>
+          <tr><td><code>enrich(p, today)</code></td><td>Adds overdue flags, days late, lead time and collection flags to a project (rules 4.4–4.6).</td></tr>
+          <tr><td><code>renderA</code> … <code>renderD</code>, <code>renderRemarks</code>, <code>renderQuality</code></td><td>Draw each section.</td></tr>
+          <tr><td><code>phqStats(rows)</code></td><td>Per-PHQ totals for sections C and D.</td></tr>
+          <tr><td><code>tiles</code>, <code>table</code>, <code>draw</code></td><td>Shared building blocks for stat tiles, tables and Chart.js charts.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Browser: Reports (Report.html)</h3>
+      <div class="tw"><table>
+        <thead><tr><th>Function</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>init()</code>, <code>preset()</code>, <code>renderSections()</code></td><td>Build the options form, date presets and section list.</td></tr>
+          <tr><td><code>options()</code></td><td>Reads and checks the form (period order, at least one PHQ and section).</td></tr>
+          <tr><td><code>run(mode)</code></td><td>Builds the PDF, shows the preview, and downloads when asked.</td></tr>
+          <tr><td><code>prepare(o)</code></td><td>Filters projects for the period and PHQs, applies the "as of" rules, computes totals, regions, priority lists and aging.</td></tr>
+          <tr><td><code>build(o)</code></td><td>Lays out the PDF: header, sections, sign-off, running headers and footers.</td></tr>
+          <tr><td><code>deliveryAction(r)</code>, <code>collectionAction(r)</code></td><td>Suggested action rules (section 06).</td></tr>
+          <tr><td><code>showPreview(doc)</code>, <code>ensurePdfjs()</code></td><td>Draw the PDF pages in the preview panel.</td></tr>
+          <tr><td><code>savePrefs()</code>, <code>restore()</code></td><td>Remember options in this browser.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 12 -->
+    <section id="troubleshooting">
+      <h2>Troubleshooting</h2>
+      <p class="lede">The problems seen so far, what causes them and how to fix them.</p>
+      <div class="tw"><table>
+        <thead><tr><th>You see</th><th>Cause</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Changes don't appear on the web app</td><td>The live link still runs the old version</td><td>Deploy → Manage deployments → ✏ → <b>New version</b> → Deploy. Check the version label.</td></tr>
+          <tr><td><i>Remarks loaded: 0 … You do not have permission to call DriveApp.getFileById</i></td><td>Drive read permission not granted, or granted after the last deployment</td><td>Make sure <code>appsscript.json</code> lists <code>drive.readonly</code>, run <code>getDashboardData</code> in the editor and allow, then publish a new version.</td></tr>
+          <tr><td>No permission pop-up when you click Run</td><td>Google thinks the existing permission is enough (manifest not saved, or old access still in place)</td><td>Check the manifest; remove access at myaccount.google.com/permissions; Run again.</td></tr>
+          <tr><td>Permissions page says "edit, create, and delete"</td><td>The read-only manifest is not in use</td><td>Remove access, paste the manifest, authorize again, publish a new version.</td></tr>
+          <tr><td>"This page has been blocked by Chrome" in the preview</td><td>Chrome blocks its PDF viewer inside Apps Script (v5 and earlier)</td><td>Update to v6, which draws the preview itself.</td></tr>
+          <tr><td><i>The PDF library did not load</i></td><td>No internet, or the CDN is blocked on the network</td><td>Reload the page; check access to cdn.jsdelivr.net.</td></tr>
+          <tr><td>A project is missing</td><td>PHQ not one of the 7, no project number, or the row is in a tab the system does not read</td><td>Check Data quality → rows excluded; check the row is in Awarded Projects.</td></tr>
+          <tr><td>A delivered project shows as Not delivered</td><td>Actual delivery date missing in Project Completion, or typed in a way that cannot be read</td><td>Fill the date as a real date cell; Refresh.</td></tr>
+          <tr><td>Odd lead times or "delivered before PO date"</td><td>Day and month swapped in a typed date</td><td>Fix the date in the source; see the Data quality list.</td></tr>
+          <tr><td>A remark does not show</td><td>PR number differs between files, or the project is not in Awarded Projects</td><td>Data quality → remarks with no matching project.</td></tr>
+          <tr><td>"Could not load data: …" on opening</td><td>A source file was moved, deleted or unshared, or a tab was renamed</td><td>Check file IDs in <code>SOURCES</code> and tab names; confirm the owner still has access.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 13 -->
+    <section id="limits">
+      <h2>Known limitations</h2>
+      <ul>
+        <li><b>Payment dates:</b> most rows have no payment date, and one cell cannot record several partial payments. The monthly collections chart and the outstanding-balance trend are therefore approximate. Filling payment dates improves them.</li>
+        <li><b>Report "as of" money:</b> PDF amounts are current OASIS figures, not a snapshot of the To date. Overdue status and aging do use the To date.</li>
+        <li><b>Suggested actions</b> come from simple keyword rules and should be reviewed.</li>
+        <li><b>Remarks files</b> are read from fixed Drive file IDs. A re-uploaded file gets a new ID, which must be updated in <code>REMARK_SOURCES</code>.</li>
+        <li><b>Ambiguous dates</b> (both parts 12 or less) are read day first.</li>
+        <li><b>Logo</b> is a small image (227 × 78 px), so it prints slightly soft. A larger PNG can replace it.</li>
+        <li><b>Speed:</b> each load reads four files; expect a few seconds. Apps Script stops any single run after 6 minutes, far above current needs.</li>
+      </ul>
+    </section>
+
+    <!-- 14 -->
+    <section id="glossary">
+      <h2>Glossary</h2>
+      <div class="tw"><table>
+        <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>PHQ</td><td>Provincial / regional headquarters handling projects for an area</td></tr>
+          <tr><td>NHQ</td><td>National headquarters; prefix of government project numbers</td></tr>
+          <tr><td>CORPO</td><td>Prefix of corporate (private) project numbers</td></tr>
+          <tr><td>PR No. / Project Number</td><td>The project's registration number, e.g. <code>NHQ- 00449Q- 26</code></td></tr>
+          <tr><td>RFQ / PO / Bidding</td><td>Types of procurement</td></tr>
+          <tr><td>NOA / NTP</td><td>Notice of Award / Notice to Proceed</td></tr>
+          <tr><td>DR</td><td>Delivery Receipt number, e.g. <code>DR-2026-09-00945</code></td></tr>
+          <tr><td>COC</td><td>Certificate of Completion</td></tr>
+          <tr><td>OASIS</td><td>The accounting system; source of gross sales, payment and balance</td></tr>
+          <tr><td>Target customer delivery date</td><td>The promised delivery date used for overdue and on-time</td></tr>
+          <tr><td>Due date</td><td>When payment is due (start of collection + payment days)</td></tr>
+          <tr><td>Follow-up items</td><td>Overdue deliveries + overdue accounts for a PHQ</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 15 -->
+    <section id="changelog">
+      <h2>Change log</h2>
+      <div class="tw"><table>
+        <thead><tr><th>Version</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>v1</td><td>Dashboard sections A–D from the two Project Links files; OASIS amounts; read-only manifest; Data quality list.</td></tr>
+          <tr><td>v2</td><td>Delivery and Collection remarks read from the Monitoring .xlsx files.</td></tr>
+          <tr><td>v3</td><td>Cancelled / dropped group based on delivery remarks.</td></tr>
+          <tr><td>v4</td><td>Section E Project remarks with search; remarks placed beside project numbers; status line with remarks count.</td></tr>
+          <tr><td>v5</td><td>Reports page: Delivery, Collection and Overall PDFs with IT Avenue branding.</td></tr>
+          <tr><td>v6</td><td>In-page PDF preview (fixes "blocked by Chrome").</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </main>
+</div>
+
+<footer class="end">IT Avenue General Merchandise · Data Analytics · PHQ Analytics Manual, system v6</footer>
+
+<script>
+(function () {
+  var links = [].slice.call(document.querySelectorAll('nav.toc a'));
+  var map = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+  function mark() {
+    var y = window.scrollY + 120, current = 0;
+    map.forEach(function (s, i) { if (s && s.offsetTop <= y) current = i; });
+    links.forEach(function (a, i) { a.classList.toggle('on', i === current); });
+  }
+  window.addEventListener('scroll', mark, { passive: true });
+  mark();
+})();
+</script>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>
